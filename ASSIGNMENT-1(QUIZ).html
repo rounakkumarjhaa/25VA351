@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise FSD Assessment</title>
+    
+    <!-- Using Inter font for that premium SaaS look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           CSS VARIABLES & DESIGN SYSTEM
+           ========================================= */
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.65);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #6366f1; /* Indigo */
+            --accent-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* =========================================
+           COMPONENT: MAIN CARD (GLASSMORPHISM)
+           ========================================= */
+        .app-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            width: 100%;
+            max-width: 580px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s ease-out forwards;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* =========================================
+           COMPONENT: FORM INPUTS
+           ========================================= */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* =========================================
+           COMPONENT: BUTTONS
+           ========================================= */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        /* =========================================
+           COMPONENT: QUIZ INTERFACE
+           ========================================= */
+        #view-quiz { display: none; }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .progress-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        /* Options */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-card {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+        }
+
+        .option-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .option-card.selected {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent);
+        }
+
+        .option-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            margin-right: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: transparent;
+            transition: var(--transition);
+        }
+
+        .option-card.selected .option-indicator {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* =========================================
+           COMPONENT: ELEGANT SVG TIMER
+           ========================================= */
+        .timer-wrapper {
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+        
+        .timer-svg {
+            transform: rotate(-90deg);
+            width: 50px;
+            height: 50px;
+        }
+
+        .timer-circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 4;
+        }
+
+        .timer-circle {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 4;
+            stroke-dasharray: 126; /* 2 * PI * r (r=20) */
+            stroke-dashoffset: 0;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+        }
+
+        .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .error-msg {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        /* =========================================
+           COMPONENT: RESULT MODAL
+           ========================================= */
+        #view-result { display: none; text-align: center; }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--success);
+            margin: 0 auto 25px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+        }
+
+        .score-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--success);
+            line-height: 1;
+        }
+
+        .score-total {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .candidate-receipt {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .receipt-row:last-child { margin-bottom: 0; }
+        .receipt-label { color: var(--text-secondary); }
+        .receipt-value { font-weight: 600; color: var(--text-primary); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- VIEW 1: ONBOARDING -->
+        <div id="view-onboarding">
+            <h1 class="header-title">Technical Assessment</h1>
+            <p class="header-subtitle">Full Stack Development (MERN) Evaluation</p>
+            
+            <div class="form-group">
+                <label>Candidate Full Name</label>
+                <input type="text" id="candidateName" class="form-input" placeholder="e.g. Jane Doe" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Candidate Roll Number</label>
+                <input type="text" id="candidateRoll" class="form-input" placeholder="e.g. CS-2024-001" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Department / Section</label>
+                <input type="text" id="candidateSection" class="form-input" placeholder="e.g. Engineering - A" autocomplete="off">
+            </div>
+            
+            <p id="onboarding-error" class="error-msg">Please complete all fields to initialize the assessment.</p>
+            <button class="btn" onclick="appController.initializeAssessment()">Begin Evaluation</button>
+        </div>
+
+
+        <!-- VIEW 2: QUIZ -->
+        <div id="view-quiz">
+            <div class="quiz-header">
+                <div class="progress-badge" id="progress-text">Question 1 / 10</div>
+                
+                <!-- Elegant SVG Timer -->
+                <div class="timer-wrapper">
+                    <svg class="timer-svg" viewBox="0 0 50 50">
+                        <circle class="timer-circle-bg" cx="25" cy="25" r="20"></circle>
+                        <circle class="timer-circle" id="timer-path" cx="25" cy="25" r="20"></circle>
+                    </svg>
+                    <div class="timer-text" id="timer-text">20</div>
+                </div>
+            </div>
+
+            <h2 class="question-text" id="question-text">Loading question...</h2>
+            
+            <div class="options-grid" id="options-container">
+                <!-- Options rendered via JS -->
+            </div>
+
+            <p id="quiz-error" class="error-msg">Please select an option before continuing.</p>
+            <button class="btn" id="next-btn" onclick="appController.handleNext()">Confirm & Continue</button>
+        </div>
+
+
+        <!-- VIEW 3: RESULTS MODAL -->
+        <div id="view-result">
+            <h1 class="header-title">Assessment Complete</h1>
+            <p class="header-subtitle">Evaluation results have been recorded successfully.</p>
+
+            <div class="score-circle">
+                <div class="score-number" id="final-score">0</div>
+                <div class="score-total">out of 10</div>
+            </div>
+
+            <div class="candidate-receipt">
+                <div class="receipt-row">
+                    <span class="receipt-label">Candidate Name</span>
+                    <span class="receipt-value" id="r-name">---</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Roll Number</span>
+                    <span class="receipt-value" id="r-roll">---</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Section</span>
+                    <span class="receipt-value" id="r-section">---</span>
+                </div>
+                <div class="receipt-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                    <span class="receipt-label">Status</span>
+                    <span class="receipt-value" id="r-status" style="color: var(--success);">Passed</span>
+                </div>
+            </div>
+
+            <button class="btn" style="background: transparent; border: 1px solid var(--border-color);" onclick="window.location.reload()">Return to Dashboard</button>
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * FSD Assessment Questions
+         * High-level, professional questions suitable for a company technical screening.
+         */
+        const database = [
+            { 
+                question: "Which of the following best describes the Virtual DOM in React?", 
+                options: ["A direct copy of the actual browser DOM", "A lightweight JavaScript representation of the DOM", "A backend database schema", "A CSS rendering engine"], 
+                correct: 1 
+            },
+            { 
+                question: "In Express.js, what is the primary purpose of 'middleware'?", 
+                options: ["To connect the database to the frontend", "To execute code between the request and response cycle", "To parse HTML templates", "To manage CSS stylesheets"], 
+                correct: 1 
+            },
+            { 
+                question: "MongoDB stores data records as BSON documents. What does BSON stand for?", 
+                options: ["Binary JSON", "Basic Script Object Notation", "Backend System Object Network", "Broad Structure Object Node"], 
+                correct: 0 
+            },
+            { 
+                question: "When building a RESTful API, which HTTP status code indicates that a resource was successfully created?", 
+                options: ["200 OK", "201 Created", "204 No Content", "404 Not Found"], 
+                correct: 1 
+            },
+            { 
+                question: "What is the primary function of JSON Web Tokens (JWT) in full-stack architecture?", 
+                options: ["Database querying", "Data encryption in transit", "Stateless authentication and authorization", "Routing HTTP requests"], 
+                correct: 2 
+            },
+            { 
+                question: "Which feature of Node.js makes it highly scalable for I/O bound applications?", 
+                options: ["Multi-threading capabilities", "Event-driven, non-blocking I/O model", "Relational database integration", "Built-in TypeScript support"], 
+                correct: 1 
+            },
+            { 
+                question: "In Git, which command is used to combine the specified branch’s history into the current branch?", 
+                options: ["git push", "git pull", "git merge", "git commit"], 
+                correct: 2 
+            },
+            { 
+                question: "What is the primary difference between CSS Grid and Flexbox?", 
+                options: ["Grid is for 2D layouts (rows/columns), Flexbox is for 1D layouts", "Flexbox is only for mobile, Grid is for desktop", "Grid is deprecated in modern browsers", "There is no difference"], 
+                correct: 0 
+            },
+            { 
+                question: "In JavaScript, what does the 'await' keyword do?", 
+                options: ["Stops the entire browser execution", "Pauses the execution of an async function until a Promise is resolved", "Creates a new Web Worker", "Loops through an array asynchronously"], 
+                correct: 1 
+            },
+            { 
+                question: "Which React Hook is specifically designed to manage component lifecycle side-effects (e.g., data fetching)?", 
+                options: ["useState", "useContext", "useReducer", "useEffect"], 
+                correct: 3 
+            }
+        ];
+
+        /**
+         * App Controller Object
+         * Keeps the architecture clean and professional (Module Pattern)
+         */
+        const appController = {
+            state: {
+                candidate: { name: '', roll: '', section: '' },
+                currentIndex: 0,
+                score: 0,
+                selectedOption: null,
+                timeLimit: 20, // 20 seconds for enterprise feel
+                timeRemaining: 20,
+                timerInterval: null
+            },
+
+            // 1. Initialization and Validation
+            initializeAssessment() {
+                const name = document.getElementById('candidateName').value.trim();
+                const roll = document.getElementById('candidateRoll').value.trim();
+                const sec = document.getElementById('candidateSection').value.trim();
+
+                if (!name || !roll || !sec) {
+                    document.getElementById('onboarding-error').style.display = 'block';
+                    return;
+                }
+
+                this.state.candidate = { name, roll, section: sec };
+                
+                // UI Transition
+                document.getElementById('view-onboarding').style.display = 'none';
+                document.getElementById('view-quiz').style.display = 'block';
+                
+                this.renderQuestion();
+            },
+
+            // 2. Render Current Question
+            renderQuestion() {
+                this.state.selectedOption = null;
+                document.getElementById('quiz-error').style.display = 'none';
+                
+                const questionData = database[this.state.currentIndex];
+                
+                // Update text
+                document.getElementById('progress-text').innerText = `Question ${this.state.currentIndex + 1} of ${database.length}`;
+                document.getElementById('question-text').innerText = questionData.question;
+                
+                // Render Options
+                const optionsContainer = document.getElementById('options-container');
+                optionsContainer.innerHTML = '';
+                
+                questionData.options.forEach((optText, index) => {
+                    const optCard = document.createElement('div');
+                    optCard.className = 'option-card';
+                    optCard.onclick = () => this.selectOption(optCard, index);
+                    
+                    // The checkmark indicator (✓)
+                    optCard.innerHTML = `
+                        <div class="option-indicator">✓</div>
+                        <div>${optText}</div>
+                    `;
+                    optionsContainer.appendChild(optCard);
+                });
+
+                // Update Button Text if last question
+                if (this.state.currentIndex === database.length - 1) {
+                    const btn = document.getElementById('next-btn');
+                    btn.innerText = "Submit Assessment";
+                    btn.style.background = "var(--success)";
+                }
+
+                this.startTimer();
+            },
+
+            // 3. Handle Option Selection
+            selectOption(element, index) {
+                const allCards = document.querySelectorAll('.option-card');
+                allCards.forEach(card => card.classList.remove('selected'));
+                
+                element.classList.add('selected');
+                this.state.selectedOption = index;
+                document.getElementById('quiz-error').style.display = 'none';
+            },
+
+            // 4. Timer Logic
+            startTimer() {
+                clearInterval(this.state.timerInterval);
+                this.state.timeRemaining = this.state.timeLimit;
+                
+                const timerText = document.getElementById('timer-text');
+                const timerCircle = document.getElementById('timer-path');
+                
+                // Reset SVG color and dash offset
+                timerCircle.style.stroke = "var(--accent)";
+                this.updateSVG(this.state.timeRemaining);
+                timerText.innerText = this.state.timeRemaining;
+
+                this.state.timerInterval = setInterval(() => {
+                    this.state.timeRemaining--;
+                    timerText.innerText = this.state.timeRemaining;
+                    this.updateSVG(this.state.timeRemaining);
+
+                    // Elegant color shifts for urgency
+                    if (this.state.timeRemaining <= 7 && this.state.timeRemaining > 3) {
+                        timerCircle.style.stroke = "var(--warning)";
+                    } else if (this.state.timeRemaining <= 3) {
+                        timerCircle.style.stroke = "var(--danger)";
+                    }
+
+                    // Timeout
+                    if (this.state.timeRemaining <= 0) {
+                        clearInterval(this.state.timerInterval);
+                        this.processAnswer(true); // force skip
+                    }
+                }, 1000);
+            },
+
+            // Math for SVG Circle Progress
+            updateSVG(timeLeft) {
+                const circle = document.getElementById('timer-path');
+                const circumference = 126; // 2 * pi * r (20)
+                const offset = circumference - (timeLeft / this.state.timeLimit) * circumference;
+                circle.style.strokeDashoffset = offset;
+            },
+
+            // 5. Handle Next / Submit
+            handleNext() {
+                this.processAnswer(false);
+            },
+
+            processAnswer(isTimeout) {
+                if (!isTimeout && this.state.selectedOption === null) {
+                    document.getElementById('quiz-error').style.display = 'block';
+                    return;
+                }
+
+                clearInterval(this.state.timerInterval);
+
+                // Check correct answer
+                if (this.state.selectedOption === database[this.state.currentIndex].correct) {
+                    this.state.score++;
+                }
+
+                this.state.currentIndex++;
+
+                if (this.state.currentIndex < database.length) {
+                    // Smooth re-render
+                    const view = document.getElementById('view-quiz');
+                    view.style.opacity = '0.5';
+                    setTimeout(() => {
+                        this.renderQuestion();
+                        view.style.opacity = '1';
+                    }, 200);
+                } else {
+                    this.showResults();
+                }
+            },
+
+            // 6. Final Presentation Modal
+            showResults() {
+                document.getElementById('view-quiz').style.display = 'none';
+                document.getElementById('view-result').style.display = 'block';
+
+                // Populate Receipt
+                document.getElementById('final-score').innerText = this.state.score;
+                document.getElementById('r-name').innerText = this.state.candidate.name;
+                document.getElementById('r-roll').innerText = this.state.candidate.roll;
+                document.getElementById('r-section').innerText = this.state.candidate.section;
+
+                const statusEl = document.getElementById('r-status');
+                const scoreCircle = document.querySelector('.score-circle');
+                const scoreText = document.getElementById('final-score');
+
+                // Logic for Pass/Fail colors
+                if (this.state.score < 6) {
+                    statusEl.innerText = "Needs Improvement";
+                    statusEl.style.color = "var(--warning)";
+                    scoreCircle.style.borderColor = "var(--warning)";
+                    scoreCircle.style.background = "rgba(245, 158, 11, 0.1)";
+                    scoreCircle.style.boxShadow = "0 0 30px rgba(245, 158, 11, 0.2)";
+                    scoreText.style.color = "var(--warning)";
+                }
+                
+                if (this.state.score < 4) {
+                    statusEl.innerText = "Failed";
+                    statusEl.style.color = "var(--danger)";
+                    scoreCircle.style.borderColor = "var(--danger)";
+                    scoreCircle.style.background = "rgba(239, 68, 68, 0.1)";
+                    scoreCircle.style.boxShadow = "0 0 30px rgba(239, 68, 68, 0.2)";
+                    scoreText.style.color = "var(--danger)";
+                }
+            }
+        };
+    </script>
+</body>
+</html>
